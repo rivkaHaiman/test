@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from "react";
-import Input from "./Input.tsx";
+import MenuItemComponent from "./MenuItem.tsx";
 import { useRenameMenu } from "./hooks/useRenameMenu.ts";
-
-interface MenuItem {
-  id: number;
-  name: string;
-  children: MenuItem[];
-}
+import { MenuItem } from "./types/menuItem.types.ts";
+import MenuPreview from "./MenuPreview.tsx";
 
 const Menu: React.FC = () => {
   const [menu, setMenu] = useState<MenuItem[]>(() => {
@@ -42,7 +38,7 @@ const Menu: React.FC = () => {
               children: [
                 ...item.children,
                 {
-                  id: Date.now(), // Use Date.now() for unique id
+                  id: Date.now(),
                   name: "New Submenu",
                   children: [],
                 },
@@ -77,44 +73,21 @@ const Menu: React.FC = () => {
     setContextMenu(null);
   };
 
-  console.log("menu", menu);
-
   const renderMenuItems = (items: MenuItem[]) => {
     return (
       <ul className="ml-4 border-l pl-2">
         {items.map((item) => (
-          <li key={item.id} className="p-1 cursor-pointer">
-            {editingId === item.id ? (
-              <Input
-                type="text"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                onBlur={() => {
-                  if (!newName.trim()) {
-                    setNewName(item.name); // Revert to original name
-                    setEditingId(null);
-                    return;
-                  }
-                  commitRename(item.id, newName);
-                  setEditingId(null);
-                  setNewName("");
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    commitRename(item.id, newName);
-                    setEditingId(null);
-                    setNewName("");
-                  }
-                }}
-                autoFocus
-              />
-            ) : (
-              <span onContextMenu={(e) => handleRightClick(e, item.id)}>
-                {item.name}
-              </span>
-            )}
-            {item.children.length > 0 && renderMenuItems(item.children)}
-          </li>
+          <MenuItemComponent
+            key={item.id}
+            item={item}
+            editingId={editingId}
+            newName={newName}
+            setNewName={setNewName}
+            setEditingId={setEditingId}
+            commitRename={commitRename}
+            handleRightClick={handleRightClick}
+            renderMenuItems={renderMenuItems}
+          />
         ))}
       </ul>
     );
@@ -124,6 +97,13 @@ const Menu: React.FC = () => {
     <div className="p-4 relative">
       <h1>Menu</h1>
       {renderMenuItems(menu)}
+
+      <div className="mt-4">
+        <h2>Menu Preview</h2>
+        <div className="bg-gray-100 p-4 rounded shadow">
+          <MenuPreview items={menu} />
+        </div>
+      </div>
 
       {contextMenu && (
         <div
