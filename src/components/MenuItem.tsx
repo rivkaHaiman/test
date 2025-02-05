@@ -1,6 +1,6 @@
 import React from "react";
 import Input from "./Input.tsx";
-import { MenuItem } from "./types/menuItem.types.ts";
+import { MenuItem } from "../types/menuItem.types.ts";
 
 interface MenuItemProps {
   item: MenuItem;
@@ -24,7 +24,7 @@ const MenuItemComponent: React.FC<MenuItemProps> = ({
   renderMenuItems,
 }) => {
   return (
-    <li key={item.id} className="p-1 cursor-pointer">
+    <li data-testid={`menu-item`} key={item.id} className="p-1 cursor-pointer">
       {editingId === item.id ? (
         <Input
           type="text"

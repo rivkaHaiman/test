@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import MenuItemComponent from "./MenuItem.tsx";
+import MenuItemComponent from "./components/MenuItem.tsx";
 import { useRenameMenu } from "./hooks/useRenameMenu.ts";
 import { MenuItem } from "./types/menuItem.types.ts";
-import MenuPreview from "./MenuPreview.tsx";
+import MenuPreview from "./components/MenuPreview.tsx";
 
 const Menu: React.FC = () => {
   const [menu, setMenu] = useState<MenuItem[]>(() => {

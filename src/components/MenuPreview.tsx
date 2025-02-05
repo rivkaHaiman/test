@@ -1,5 +1,5 @@
 import React from "react";
-import { MenuItem } from "./types/menuItem.types";
+import { MenuItem } from "../types/menuItem.types";
 
 const MenuPreview: React.FC<{ items: MenuItem[] }> = ({ items }) => {
   return (
