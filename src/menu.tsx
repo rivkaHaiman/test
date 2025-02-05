@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Input from "./Input.tsx";
 import { useRenameMenu } from "./hooks/useRenameMenu.ts";
 
@@ -9,9 +9,12 @@ interface MenuItem {
 }
 
 const Menu: React.FC = () => {
-  const [menu, setMenu] = useState<MenuItem[]>([
-    { id: 0, name: "Main Menu", children: [] },
-  ]);
+  const [menu, setMenu] = useState<MenuItem[]>(() => {
+    const savedMenu = localStorage.getItem("menu");
+    return savedMenu
+      ? JSON.parse(savedMenu)
+      : [{ id: 0, name: "Main Menu", children: [] }];
+  });
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -20,6 +23,10 @@ const Menu: React.FC = () => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [newName, setNewName] = useState("");
   const { commitRename } = useRenameMenu(setMenu);
+
+  useEffect(() => {
+    localStorage.setItem("menu", JSON.stringify(menu));
+  }, [menu]);
 
   const handleRightClick = (event: React.MouseEvent, id: number) => {
     event.preventDefault();
@@ -54,6 +61,24 @@ const Menu: React.FC = () => {
     setContextMenu(null);
   };
 
+  const handleDelete = (itemId: number) => {
+    const deleteItemRecursive = (items: MenuItem[]): MenuItem[] => {
+      return items
+        .filter((item) => item.id !== itemId)
+        .map((item) => {
+          if (item.children.length > 0) {
+            return { ...item, children: deleteItemRecursive(item.children) };
+          }
+          return item;
+        });
+    };
+
+    setMenu((prevMenu) => deleteItemRecursive(prevMenu));
+    setContextMenu(null);
+  };
+
+  console.log("menu", menu);
+
   const renderMenuItems = (items: MenuItem[]) => {
     return (
       <ul className="ml-4 border-l pl-2">
@@ -65,6 +90,11 @@ const Menu: React.FC = () => {
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 onBlur={() => {
+                  if (!newName.trim()) {
+                    setNewName(item.name); // Revert to original name
+                    setEditingId(null);
+                    return;
+                  }
                   commitRename(item.id, newName);
                   setEditingId(null);
                   setNewName("");
@@ -102,10 +132,7 @@ const Menu: React.FC = () => {
         >
           <button
             className="block w-full text-left p-1 hover:bg-gray-200"
-            onClick={() => {
-              console.log("111111111", contextMenu.itemId!);
-              handleAddSubmenu(contextMenu.itemId!);
-            }}
+            onClick={() => handleAddSubmenu(contextMenu.itemId!)}
           >
             Add Submenu
           </button>
@@ -118,6 +145,12 @@ const Menu: React.FC = () => {
             }}
           >
             Rename
+          </button>
+          <button
+            className="block w-full text-left p-1 hover:bg-gray-200"
+            onClick={() => handleDelete(contextMenu.itemId!)}
+          >
+            Delete
           </button>
         </div>
       )}
